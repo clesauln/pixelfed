@@ -4,6 +4,7 @@ namespace App\Util\Media;
 
 use App\Util\Blurhash\Blurhash as BlurhashEngine;
 use App\Media;
+use Image as Intervention;
 
 class Blurhash {
 
@@ -25,21 +26,22 @@ class Blurhash {
 			return self::DEFAULT_HASH;
 		}
 
-		$image = imagecreatefromstring(file_get_contents($file));
+		$image = Intervention::make($file);
+
 		if(!$image) {
 			return self::DEFAULT_HASH;
 		}
-		$width = imagesx($image);
-		$height = imagesy($image);
+		$width = $image->width();
+		$height = $image->height();
 
 		$pixels = [];
 		for ($y = 0; $y < $height; ++$y) {
 			$row = [];
 			for ($x = 0; $x < $width; ++$x) {
-				$index = imagecolorat($image, $x, $y);
-				$colors = imagecolorsforindex($image, $index);
+				$pixel = $image->getImagePixelColor($x, $y);
+				$colors =  $pixel->getColor(); 
 
-				$row[] = [$colors['red'], $colors['green'], $colors['blue']];
+				$row[] = [$colors['r'], $colors['g'], $colors['b']];
 			}
 			$pixels[] = $row;
 		}
